@@ -8,22 +8,27 @@
   </head>
   <body>
     <main class="scene-viewport">
-      <img class="scene-image" src="assets/scene.png" usemap="#scene-map" hidden>
-      <map name="scene-map" id="scene-map"></map>
-      <svg class="debug-overlay" hidden></svg>
-      <div class="gui-layer" id="gui-layer">
-        <div class="lives-counter" hidden></div>
-        <div class="hint-panel" hidden></div>
+      <div class="scene-stage">
+        <img class="scene-image" src="assets/scene.png" usemap="#scene-map" hidden>
+        <map name="scene-map" id="scene-map"></map>
+        <svg class="debug-overlay" hidden></svg>
+        <div class="gui-layer" id="gui-layer">
+          <div class="progress-counter" hidden></div>
+          <div class="lives-counter" hidden></div>
+          <div class="hint-panel" hidden></div>
+        </div>
+
+        <div class="modal-layer" hidden>
+          <div class="modal">
+            <h2 class="modal-title" hidden></h2>
+            <p class="modal-text"></p>
+            <div class="modal-next"></div>
+          </div>
+        </div>
       </div>
     </main>
 
-    <div class="modal-layer" hidden>
-      <div class="modal">
-        <p class="modal-text"></p>
-        <div class="modal-next"></div>
-      </div>
-    </div>
-
+    <audio class="background-music" src="assets/music.mp3" loop preload="auto"></audio>
     <script type="module" src="./game.js"></script>
   </body>
 </html>
