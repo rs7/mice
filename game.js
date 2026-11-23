@@ -2,6 +2,7 @@ import { createGameMachine } from "./fsm.js";
 
 const debugMode = new URLSearchParams(window.location.search).get("debug") === "1";
 const totalAttempts = 3;
+const victoryUrl = "";
 
 const gameState = {
   status: "intro",
@@ -17,7 +18,7 @@ const modalNext = document.querySelector(".modal-next");
 const livesCounter = document.querySelector(".lives-counter");
 const backgroundMusic = document.querySelector(".background-music");
 
-backgroundMusic.volume = 1;
+backgroundMusic.volume = 0.3;
 modalNext.addEventListener("click", () => backgroundMusic.play(), { once: true });
 
 const lifeIcons = Array.from({ length: totalAttempts }, () => {
@@ -51,6 +52,7 @@ async function initializeScene() {
   const image = document.querySelector(".scene-image");
   const map = document.querySelector("#scene-map");
   const debugOverlay = document.querySelector(".debug-overlay");
+  const debugControls = document.querySelector(".debug-controls");
   const hintPanel = document.querySelector(".hint-panel");
   const progressCounter = document.querySelector(".progress-counter");
   const progressIcons = scene.objects.map(() => {
@@ -65,6 +67,8 @@ async function initializeScene() {
   image.src = scene.image.src;
 
   if (debugMode) {
+    document.querySelector(".debug-lose").addEventListener("click", () => showDebugResult("DEBUG_LOSE"));
+    document.querySelector(".debug-win").addEventListener("click", () => showDebugResult("DEBUG_WIN"));
     debugOverlay.setAttribute("viewBox", `0 0 ${scene.image.width} ${scene.image.height}`);
     for (const object of scene.objects) {
       const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
@@ -73,7 +77,17 @@ async function initializeScene() {
     }
   }
 
+  async function showDebugResult(event) {
+    if (!modalLayer.hidden) {
+      modalNext.click();
+      // Завершаем обработку подсказки или промаха перед показом финала.
+      await Promise.resolve();
+    }
+    await machine.send(event);
+  }
+
   function renderGame() {
+    debugControls.hidden = !debugMode || gameState.status !== "searching";
     livesCounter.hidden = gameState.status === "intro";
     lifeIcons.forEach((icon, index) => {
       icon.src = index >= totalAttempts - gameState.lives ? "assets/heart.svg" : "assets/heart-outline.svg";
@@ -94,11 +108,20 @@ async function initializeScene() {
     hintPanel.textContent = scene.objects[gameState.selectedObjectIndex].hint;
   }
 
+  function fadeScene(from, to) {
+    return stage.animate([{ opacity: from }, { opacity: to }], {
+      duration: 1000,
+      easing: "ease-in-out",
+      fill: "forwards"
+    }).finished;
+  }
+
   async function handleStateChange(event) {
     renderGame();
 
     switch (gameState.status) {
       case "welcome":
+        await fadeScene(0, 1);
         await showModal(texts.welcome.title, texts.welcome.message, texts.welcome.button);
         await machine.send("START");
         break;
@@ -120,9 +143,12 @@ async function initializeScene() {
       }
       case "all_found":
         await showModal(texts.all_found.title, texts.all_found.message, texts.all_found.button);
+        await fadeScene(1, 0);
+        if (victoryUrl) window.location.assign(victoryUrl);
         break;
       case "out_of_lives":
         await showModal(texts.out_of_lives.title, texts.out_of_lives.message, texts.out_of_lives.button);
+        await fadeScene(1, 0);
         window.location.reload();
         break;
     }
@@ -164,6 +190,7 @@ async function initializeScene() {
   new ResizeObserver(resizeMap).observe(viewport);
   renderGame();
   await showModal(texts.intro.title, texts.intro.message, texts.intro.button);
+  await image.decode();
   await machine.send("CONTINUE");
 }
 
