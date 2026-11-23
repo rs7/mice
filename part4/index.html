@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mice and Mystics</title>
+<style>
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:#d7dbe1;
+    color:#17191d;
+    font-family:Arial,Helvetica,sans-serif;
+  }
+  .page{
+    width:min(1180px,94vw);
+    margin:38px auto 60px;
+  }
+  .hero{
+    background:linear-gradient(180deg,#0b0d10 0%,#15191f 100%);
+    color:white;
+    padding:34px 54px 38px;
+    border:1px solid #20242c;
+    box-shadow:0 3px 10px rgba(0,0,0,.18);
+  }
+  .hero .small{
+    font-size:20px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:#cfd5dc;
+    margin-bottom:12px;
+  }
+  .hero h1{
+    margin:0;
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:clamp(48px,7vw,92px);
+    font-weight:400;
+    line-height:1;
+  }
+  .toolbar{
+    margin-top:26px;
+    background:#eef1f4;
+    border:1px solid #a9b1bb;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    padding:16px 20px;
+  }
+  .toolbar strong{font-size:20px}
+  .buttons{display:flex;gap:10px;flex-wrap:wrap}
+  .fakebtn{
+    background:#12161c;
+    color:#fff;
+    padding:10px 15px;
+    border-radius:5px;
+    font-size:14px;
+    border:1px solid #000;
+  }
+  .content-grid{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 290px;
+    gap:28px;
+    margin-top:26px;
+  }
+  .post,.sidebar{
+    background:#f7f8f9;
+    border:1px solid #b6bdc6;
+  }
+  .post{padding:34px 42px 40px}
+  .post h2{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:36px;
+    margin:0 0 8px;
+    font-weight:400;
+  }
+  .meta{
+    color:#68717d;
+    font-size:14px;
+    margin-bottom:28px;
+  }
+  .post p{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:18px;
+    line-height:1.72;
+    margin:0 0 18px;
+  }
+  .sidebar-title{
+    background:#101318;
+    color:white;
+    padding:16px 18px;
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:24px;
+  }
+  .sidebar-body{
+    padding:18px;
+    color:#4d5661;
+    line-height:1.55;
+    font-size:14px;
+  }
+  .side-card{
+    padding:18px;
+    border-bottom:1px solid #cfd4da;
+    cursor:default;
+  }
+  .side-card h3{
+    margin:0 0 6px;
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:20px;
+    font-weight:400;
+  }
+  .side-card .date{
+    color:#68717d;
+    font-size:13px;
+    margin-bottom:9px;
+  }
+  .side-card p{
+    margin:0;
+    color:#4d5661;
+    line-height:1.45;
+    font-size:13px;
+  }
+  .radio-card{
+    margin:18px;
+    padding:16px;
+    border:1px solid #aeb5be;
+    background:#eef1f4;
+  }
+  .radio-card .freq{
+    font-weight:700;
+    font-size:26px;
+    margin-bottom:8px;
+  }
+  .radio-card .tag{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:16px;
+  }
+  .password-box{
+    margin-top:34px;
+    border-top:1px solid #c9ced5;
+    padding-top:26px;
+  }
+  .password-box label{
+    display:block;
+    font-weight:700;
+    margin-bottom:10px;
+  }
+  .password-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  input{
+    flex:1 1 220px;
+    padding:12px 13px;
+    font-size:16px;
+    border:1px solid #9da6b1;
+    background:#fff;
+  }
+  button{
+    padding:12px 18px;
+    background:#13171d;
+    color:white;
+    border:1px solid #000;
+    cursor:pointer;
+    font-weight:700;
+  }
+  #message{
+    margin-top:10px;
+    min-height:20px;
+    font-size:14px;
+    color:#1f5d2f;
+    font-weight:700;
+  }
+
+
+
+  .redact-word{display:inline; border-radius:2px; box-decoration-break:clone; -webkit-box-decoration-break:clone;}
+  .redacted .redact-word:not(.keep){
+    color:#0c0c0d!important; background:#0c0c0d;
+    box-shadow:0 0 0 .025em #0c0c0d;
+    animation:redactIn .34s ease-out both;
+    animation-delay:calc(var(--order, 0) * 9ms);
+  }
+  .redacted .redact-word.keep{background:transparent!important;color:inherit!important;box-shadow:none!important;font-weight:700;}
+  @keyframes redactIn{
+    0%{background:transparent;color:inherit;box-shadow:none;}
+    35%{background:#4a4a4b;color:#4a4a4b;box-shadow:0 0 0 .02em #4a4a4b;}
+    100%{background:#0c0c0d;color:#0c0c0d;box-shadow:0 0 0 .025em #0c0c0d;}
+  }
+  .advert-title{font-family:Georgia,"Times New Roman",serif;font-size:20px;margin-bottom:9px}
+  .advert-tag{font:14px/1.5 Georgia,"Times New Roman",serif;color:#4d5661}
+  @media(max-width:800px){
+    .hero{padding:26px 24px 30px}
+    .toolbar{align-items:flex-start;flex-direction:column}
+    .content-grid{grid-template-columns:1fr}
+    .post{padding:28px 24px 32px}
+  }
+</style>
+</head>
+<body>
+<div class="page" id="page">
+  <header class="hero redact-content"><div class="small">The personal blog of</div><h1>Mice and Mystics</h1></header>
+  <div class="toolbar redact-content"><strong>Mice and Mystics</strong><div class="buttons"><div class="fakebtn">Home</div><div class="fakebtn">Archive</div><div class="fakebtn">About</div></div></div>
+  <div class="content-grid">
+    <main class="post">
+      <article class="redact-content" id="article"><h2>The Secret Lives of Mice</h2><div class="meta">Stories from the hidden mouse world</div>
+      <p>Behind the walls of old houses, beneath creaking floorboards and inside forgotten cupboards, mice have built a remarkable little world of their own. Every evening brings new discoveries: a lost button, a ribbon from an abandoned parcel, or an unfamiliar scent drifting from the kitchen. To a curious mouse, even the smallest object can inspire a mystery. And the most adventurous mice are always eager to discover <span class="redact-word keep">what</span> lies beyond the next hidden doorway.</p>
+<p>Among the mouse communities, collecting unusual objects is a beloved tradition. Tiny shelves are filled with shiny coins, colorful threads, broken watch parts and carefully folded scraps of paper. Each discovery has its own story, although the truth behind these treasures is rarely known. The most valuable collections are kept in secret rooms, accessible only through narrow passages concealed behind the walls.</p>
+<p>There is an old tale about a little mouse who discovered <span class="redact-word keep">three</span> mysterious marks carved into a wooden box. No mouse in the neighborhood could explain their meaning. The box passed from paw to paw, attracting curious visitors and inspiring countless theories. Some believed it belonged to a traveling merchant, while the local storytellers insisted it had been left behind as a secret message.</p>
+<p>The mice are also devoted to exchanging letters. Their underground postal service operates after sunset, carrying miniature envelopes through tunnels, gardens and abandoned cellars. Addresses are written on pieces of paper no larger than a postage stamp, and each delivery is handled with great care. Occasionally, a letter arrives without a sender, containing unusual drawings or puzzling instructions.</p>
+<p>Perhaps the greatest mysteries of the mouse world are hidden in ordinary <span class="redact-word keep">words</span>. A sentence scribbled on an old receipt, an inscription beneath a dusty picture frame or a message tucked inside a forgotten book may contain the beginning of an extraordinary adventure. For mice with patient paws and curious minds, every secret is an invitation to explore.</p>
+      </article>
+      <div class="password-box">
+        <label for="password">Введите пароль</label>
+        <div class="password-row"><input id="password" type="password" placeholder="Кодовое слово" autocomplete="off"><button id="submit" type="button">Открыть</button></div>
+        <div id="message" role="status" aria-live="polite"></div>
+      </div>
+    </main>
+    <aside class="sidebar redact-content">
+      <div class="sidebar-title">About the Blog</div>
+      <div class="sidebar-body">A little collection of curious stories about mice, their secrets, forgotten treasures and the wonderful mysteries hidden in ordinary places.</div>
+      <div class="sidebar-title">Other Articles</div>
+      <div class="side-card"><h3>The Curious World of Mouse Perfumery</h3><div class="date">28 February</div><p>Not all mice are interested in cheese. Some have developed a remarkable fondness for fragrances, collecting rose petals, lavender blossoms and tiny drops of perfume. Their secret collections are said to contain the most unusual scents, carefully preserved in miniature bottles. But the greatest mystery remains...</p></div>
+      <div class="side-card"><h3>Morse Code: The Language of Dots and Dashes</h3><div class="date">16 September</div><p>For over a century, Morse code has allowed messages to travel across great distances using sequences of short and long signals. Even today, its distinctive rhythms can be heard on amateur radio frequencies, where a few carefully arranged sounds may carry an entire message...</p></div>
+      <div class="radio-card"><div class="advert-title">Midnight Mouse Post</div><div class="advert-tag">Secret letters. Curious parcels. Delivered after dark.</div></div>
+    </aside>
+  </div>
+</div>
+<script>
+(() => {
+  'use strict';
+  const passwordDigest = 'fed9b4c479d0f6dae17b3f1cadcca68af8cdd24d95a94a1c0195cc741dfec486';
+  const page = document.getElementById('page');
+  const input = document.getElementById('password');
+  const message = document.getElementById('message');
+  const submit = document.getElementById('submit');
+
+  // Wrap prose word-by-word while preserving the three deliberately exposed words.
+  const wordRe = /[^\s]+|\s+/gu;
+  page.querySelectorAll('.redact-content').forEach(section => {
+    const walker = document.createTreeWalker(section, NodeFilter.SHOW_TEXT);
+    const textNodes = [];
+    while(walker.nextNode()) {
+      if(!walker.currentNode.parentElement.closest('.redact-word')) textNodes.push(walker.currentNode);
+    }
+    textNodes.forEach(node => {
+      if(!node.nodeValue.trim()) return;
+      const fragment = document.createDocumentFragment();
+      for(const token of node.nodeValue.match(wordRe) || []) {
+        if(/^\s+$/u.test(token)) fragment.appendChild(document.createTextNode(token));
+        else {
+          const span = document.createElement('span');
+          span.className = 'redact-word';
+          span.textContent = token;
+          fragment.appendChild(span);
+        }
+      }
+      node.replaceWith(fragment);
+    });
+  });
+
+  async function unlock() {
+    if(page.classList.contains('redacted')) return;
+    const bytes = new TextEncoder().encode(input.value.trim().toLowerCase());
+    const hash = await crypto.subtle.digest('SHA-256',bytes);
+    const actual = [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2,'0')).join('');
+    if(actual !== passwordDigest) {
+      message.textContent = 'Неверный пароль.';
+      message.style.color = '#7e2020';
+      return;
+    }
+    message.textContent = 'Пароль верный';
+    message.style.color = '#1f5d2f';
+    const words = [...page.querySelectorAll('.redact-word')];
+    words.map(el => ({el,rect:el.getBoundingClientRect()}))
+      .sort((a,b) => Math.abs(a.rect.top-b.rect.top)>4 ? a.rect.top-b.rect.top : a.rect.left-b.rect.left)
+      .forEach((item,i) => item.el.style.setProperty('--order',i));
+    page.classList.add('redacted');
+    input.disabled = true;
+    submit.disabled = true;
+  }
+  submit.addEventListener('click', () => { unlock().catch(() => {message.textContent='Ошибка проверки пароля.';}); });
+  input.addEventListener('keydown',e => {if(e.key==='Enter') unlock().catch(() => {message.textContent='Ошибка проверки пароля.';});});
+})();
+</script>
+</body></html>

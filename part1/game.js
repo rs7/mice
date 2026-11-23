@@ -2,7 +2,7 @@ import { createGameMachine } from "./fsm.js";
 
 const debugMode = new URLSearchParams(window.location.search).get("debug") === "1";
 const totalAttempts = 3;
-const victoryUrl = "";
+const victoryUrl = "/part2/";
 
 const gameState = {
   status: "intro",

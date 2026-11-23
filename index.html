@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mice</title>
+    <style>
+      body {
+        box-sizing: border-box;
+        display: grid;
+        place-items: center;
+        min-height: 100svh;
+        margin: 0;
+        padding: 24px;
+        background: #000;
+        color: #fff;
+        font: 18px/1.6 system-ui, sans-serif;
+        text-align: center;
+      }
+
+      main,
+      noscript {
+        max-width: 32rem;
+      }
+
+      h1 {
+        margin: 0 0 16px;
+        font-size: clamp(26px, 6vw, 36px);
+        line-height: 1.2;
+      }
+
+      p {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <main hidden>
+      <h1>Откройте игру на компьютере</h1>
+      <p>Игра рассчитана на большой экран и управление мышью. Пожалуйста, откройте эту же ссылку на компьютере или ноутбуке.</p>
+    </main>
+    <noscript>
+      <p>Для запуска игры откройте эту страницу на компьютере с включённым JavaScript.</p>
+    </noscript>
+    <script>
+      const touchOnlyDevice = navigator.maxTouchPoints > 0
+        && window.matchMedia("(pointer: coarse)").matches
+        && !window.matchMedia("(any-pointer: fine)").matches;
+
+      const isMobile = navigator.userAgentData?.mobile
+        || /Android|iPhone|iPad|iPod|Mobile|IEMobile|Opera Mini/i.test(navigator.userAgent)
+        || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+        || touchOnlyDevice;
+
+      if (isMobile) {
+        document.querySelector("main").hidden = false;
+      } else {
+        window.location.replace("./part1/" + window.location.search + window.location.hash);
+      }
+    </script>
+  </body>
+</html>
