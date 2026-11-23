@@ -30,7 +30,13 @@ export function createGameMachine(gameState, objectCount, onChange) {
         return "searching";
       }
     },
-    all_found: {},
+    all_found: {
+      CONTINUE: () => "outro"
+    },
+    outro: {
+      CONTINUE: () => "outro_note"
+    },
+    outro_note: {},
     out_of_lives: {}
   };
 

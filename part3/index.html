@@ -354,6 +354,10 @@
 
   tuner.addEventListener('input', updateMix);
 
+  document.getElementById('investigationLink').addEventListener('click', () => {
+    window.open('../part4/', '_blank', 'noopener,noreferrer');
+  });
+
   powerBtn.addEventListener('click', async () => {
     await initAudio();
     if(ctx.state === 'suspended') await ctx.resume();

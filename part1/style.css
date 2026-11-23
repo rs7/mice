@@ -52,6 +52,7 @@ body {
 .progress-counter[hidden],
 .debug-controls[hidden],
 .modal-title[hidden],
+.modal-restart[hidden],
 .modal-layer[hidden] {
   display: none;
 }
@@ -197,11 +198,42 @@ body {
   white-space: pre-wrap;
 }
 
-.modal-next {
+.modal-note {
+  width: 640px;
+  text-align: left;
+}
+
+.modal-note .modal-title {
+  text-align: center;
+}
+
+.modal-text p {
+  margin: 0;
+}
+
+.modal-text p + p {
+  margin-top: 20px;
+}
+
+.modal-text hr {
+  margin: 24px 0;
+  border: 0;
+  border-top: 1px solid rgb(255 255 255 / 25%);
+}
+
+.modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.modal-next,
+.modal-restart {
   display: inline-block;
   box-sizing: border-box;
   max-width: 100%;
-  margin-top: 22px;
   padding: 8px 16px;
   border: 1px solid rgb(255 255 255 / 35%);
   border-radius: 8px;
@@ -214,6 +246,7 @@ body {
 }
 
 .modal-next:hover,
+.modal-restart:hover,
 .debug-button:hover {
   background: rgb(255 255 255 / 22%);
 }

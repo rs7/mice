@@ -82,6 +82,9 @@ stage.addEventListener('pointermove',e=>{
 });
 stage.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch'&&e.pointerType!=='pen')return;if(!playing||transitioning)return;const r=stage.getBoundingClientRect(),tx=e.clientX-r.left,ty=e.clientY-r.top;if(Math.hypot(tx-x,ty-y)>75)return;e.preventDefault();drag=true;dragId=e.pointerId;dragOffset={x:tx-x,y:ty-y};stage.setPointerCapture(e.pointerId)});
 stage.addEventListener('pointerup',()=>drag=false);stage.addEventListener('pointercancel',()=>drag=false);
+$('qrPlaceholder').addEventListener('click',()=>{
+  window.open('../part3/', '_blank', 'noopener,noreferrer');
+});
 stage.addEventListener('pointerleave',()=>{drag=false;});window.addEventListener('blur',()=>{drag=false});$('restart').addEventListener('click',()=>{stage.classList.add('prestart');$('intro').classList.remove('off');reset();playing=false;stage.classList.remove('modal-cursor');gateCheck();});
 function tick(now){const dt=Math.min(.05,Math.max(0,(now-last)/1000));last=now;if(playing&&!transitioning){if(now>=nextSwitch)switchLight(now);const {w,h}=dims(),n=room===1?2:3;const xs=room===1?[w*.30,w*.635]:[w*.235,w*.455,w*.675];const spacing=xs[1]-xs[0];const diameter=room===1?Math.min(w*.32,h*.72,spacing-8):Math.min(w*.215,h*.52,spacing-7);const rad=diameter/2;const t=(now-roomStart)/1000;positions=[];let dangerous=false;
 for(let i=0;i<n;i++){const phases=room===1?[t*3.35,t*4.45+1.9]:[t*3.35+.6,t*4.45+2.2,t*3.9+4.0];const v=Math.sin(phases[i]);const cy=rad+(h-2*rad)*(.5+.5*v);const ex=xs[i],eye=eyes[i];eye.style.width=diameter+'px';eye.style.height=diameter+'px';eye.style.left=(ex-rad)+'px';eye.style.top=(cy-rad)+'px';positions.push([ex,cy,rad]);if(Math.hypot(x-ex,y-cy)<=rad)dangerous=true;}
