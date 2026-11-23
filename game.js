@@ -1,5 +1,7 @@
 import { createGameMachine } from "./fsm.js";
 
+const debugMode = new URLSearchParams(window.location.search).get("debug") === "1";
+
 const gameState = {
   status: "intro",
   lives: 3,
@@ -7,16 +9,14 @@ const gameState = {
 };
 
 const livesCounter = document.querySelector(".lives-counter");
+const modalLayer = document.querySelector(".modal-layer");
 const modal = document.querySelector(".modal");
 const modalText = document.querySelector(".modal-text");
 const modalNext = document.querySelector(".modal-next");
 
-modal.addEventListener("cancel", (event) => event.preventDefault());
-
 const lifeIcons = Array.from({ length: gameState.lives }, () => {
   const icon = document.createElement("img");
   icon.classList.add("lives-icon");
-  icon.alt = "";
   icon.draggable = false;
   livesCounter.append(icon);
   return icon;
@@ -27,18 +27,18 @@ function renderLives() {
   lifeIcons.forEach((icon, index) => {
     icon.src = index < gameState.lives ? "assets/heart.svg" : "assets/heart-outline.svg";
   });
-  livesCounter.setAttribute("aria-label", `Осталось жизней: ${gameState.lives} из ${lifeIcons.length}`);
 }
 
-function showModal(message, buttonText = texts.next) {
+function showModal(message, buttonText) {
   return new Promise((resolve) => {
     modalText.textContent = message;
     modalNext.textContent = buttonText;
     modalNext.addEventListener("click", () => {
-      modal.close();
+      modalLayer.hidden = true;
       resolve();
     }, { once: true });
-    modal.showModal();
+    modalLayer.hidden = false;
+    modal.scrollTop = 0;
   });
 }
 
@@ -48,25 +48,27 @@ async function initializeScene() {
   const viewport = document.querySelector(".scene-viewport");
   const image = document.querySelector(".scene-image");
   const map = document.querySelector("#scene-map");
+  const debugOverlay = document.querySelector(".debug-overlay");
   const hintPanel = document.querySelector(".hint-panel");
   const machine = createGameMachine(gameState, scene.objects.length, handleStateChange);
 
   image.src = scene.image.src;
 
+  if (debugMode) {
+    debugOverlay.setAttribute("viewBox", `0 0 ${scene.image.width} ${scene.image.height}`);
+    for (const object of scene.objects) {
+      const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+      polygon.setAttribute("points", object.polygon.map((point) => point.join(",")).join(" "));
+      debugOverlay.append(polygon);
+    }
+  }
+
   function renderGame() {
     renderLives();
     image.hidden = gameState.status === "intro";
+    debugOverlay.toggleAttribute("hidden", !debugMode || gameState.status === "intro");
     hintPanel.hidden = gameState.status !== "searching";
     hintPanel.textContent = scene.objects[gameState.selectedObjectIndex].hint;
-    areas.forEach(({ area }, areaIndex) => {
-      const active = gameState.status === "searching" && areaIndex === gameState.selectedObjectIndex;
-      if (active) {
-        area.href = "#";
-      } else {
-        area.removeAttribute("href");
-      }
-      area.setAttribute("aria-disabled", String(!active));
-    });
   }
 
   async function handleStateChange(event) {
@@ -74,27 +76,31 @@ async function initializeScene() {
 
     switch (gameState.status) {
       case "welcome":
-        await showModal(texts.welcome);
+        await showModal(texts.welcome.message, texts.welcome.button);
         await machine.send("START");
         break;
       case "searching":
         if (event === "START" || event === "CONTINUE") {
-          await showModal(scene.objects[gameState.selectedObjectIndex].hint);
+          hintPanel.hidden = true;
+          const object = scene.objects[gameState.selectedObjectIndex];
+          await showModal(object.hint, texts.hint.button);
+          hintPanel.hidden = false;
         } else if (event === "MISS") {
-          await showModal(texts.miss);
+          await showModal(texts.miss.message, texts.miss.button);
         }
         break;
       case "item_found": {
         const object = scene.objects[gameState.selectedObjectIndex];
-        await showModal(texts.item_found.replace("{name}", object.name));
+        const title = texts.item_found.message.replace("{name}", object.name.toUpperCase());
+        await showModal(`${title}\n\n${object.foundText}`, object.foundButton);
         await machine.send("CONTINUE");
         break;
       }
       case "all_found":
-        await showModal(texts.all_found);
+        await showModal(texts.all_found.message, texts.all_found.button);
         break;
       case "out_of_lives":
-        await showModal(texts.out_of_lives, texts.restart);
+        await showModal(texts.out_of_lives.message, texts.out_of_lives.button);
         window.location.reload();
         break;
     }
@@ -103,10 +109,7 @@ async function initializeScene() {
   const areas = scene.objects.map((object, index) => {
     const area = document.createElement("area");
     area.shape = "poly";
-    area.alt = object.hint;
-    area.tabIndex = -1;
-    area.addEventListener("click", (event) => {
-      event.preventDefault();
+    area.addEventListener("click", () => {
       if (index < gameState.selectedObjectIndex) return;
       machine.send(index === gameState.selectedObjectIndex ? "HIT" : "MISS");
     });
@@ -126,6 +129,8 @@ async function initializeScene() {
     // Размер самого img совпадает с видимой картинкой, без чёрных полос.
     image.style.width = `${scene.image.width * scale}px`;
     image.style.height = `${scene.image.height * scale}px`;
+    debugOverlay.style.width = image.style.width;
+    debugOverlay.style.height = image.style.height;
 
     // polygon: [x, y] в пикселях исходной картинки.
     // Начало — левый верхний угол; x растёт вправо, y — вниз.
@@ -139,7 +144,7 @@ async function initializeScene() {
   resizeMap();
   new ResizeObserver(resizeMap).observe(viewport);
   renderGame();
-  await showModal(texts.intro);
+  await showModal(texts.intro.message, texts.intro.button);
   await machine.send("CONTINUE");
 }
 

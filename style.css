@@ -23,7 +23,8 @@ body {
   cursor: default;
 }
 
-.scene-image {
+.scene-image,
+.debug-overlay {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -31,13 +32,29 @@ body {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+.scene-image {
   object-fit: contain;
   object-position: center;
 }
 
 .scene-image[hidden],
-.lives-counter[hidden] {
+.debug-overlay[hidden],
+.lives-counter[hidden],
+.modal-layer[hidden] {
   display: none;
+}
+
+.debug-overlay {
+  pointer-events: none;
+}
+
+.debug-overlay polygon {
+  fill: rgb(0 229 255 / 12%);
+  stroke: #00e5ff;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
 }
 
 .gui-layer {
@@ -81,10 +98,23 @@ body {
   bottom: 16px;
   transform: translateX(-50%);
   box-sizing: border-box;
-  width: min(640px, calc(100% - 32px));
+  width: max-content;
+  max-width: calc(100% - 32px);
+  max-height: 30dvh;
+  padding: 8px 20px;
+  overflow-y: auto;
   color: #fff;
   font: 16px/1.5 system-ui, sans-serif;
   text-align: center;
+}
+
+.modal-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  place-items: center;
 }
 
 .modal {
@@ -101,16 +131,13 @@ body {
   text-align: center;
 }
 
-.modal::backdrop {
-  background: transparent;
-}
-
 .modal-text {
   margin: 0;
   white-space: pre-wrap;
 }
 
 .modal-next {
+  display: inline-block;
   margin-top: 20px;
   padding: 10px 24px;
   border: 1px solid rgb(255 255 255 / 35%);
@@ -119,13 +146,9 @@ body {
   color: inherit;
   font: inherit;
   cursor: pointer;
+  user-select: none;
 }
 
 .modal-next:hover {
   background: rgb(255 255 255 / 22%);
-}
-
-.modal-next:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 3px;
 }

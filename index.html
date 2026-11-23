@@ -8,18 +8,21 @@
   </head>
   <body>
     <main class="scene-viewport">
-      <img class="scene-image" src="assets/scene.png" alt="Сцена для поиска предметов" usemap="#scene-map" hidden>
+      <img class="scene-image" src="assets/scene.png" usemap="#scene-map" hidden>
       <map name="scene-map" id="scene-map"></map>
+      <svg class="debug-overlay" hidden></svg>
       <div class="gui-layer" id="gui-layer">
-        <div class="lives-counter" role="status" aria-live="polite" aria-atomic="true" hidden></div>
-        <div class="hint-panel" role="status" aria-live="polite" hidden></div>
+        <div class="lives-counter" hidden></div>
+        <div class="hint-panel" hidden></div>
       </div>
     </main>
 
-    <dialog class="modal" aria-labelledby="modal-text">
-      <p class="modal-text" id="modal-text"></p>
-      <button class="modal-next" type="button" autofocus></button>
-    </dialog>
+    <div class="modal-layer" hidden>
+      <div class="modal">
+        <p class="modal-text"></p>
+        <div class="modal-next"></div>
+      </div>
+    </div>
 
     <script type="module" src="./game.js"></script>
   </body>
