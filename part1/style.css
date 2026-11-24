@@ -50,7 +50,6 @@ body {
 .debug-overlay[hidden],
 .lives-counter[hidden],
 .progress-counter[hidden],
-.debug-controls[hidden],
 .modal-title[hidden],
 .modal-restart[hidden],
 .modal-layer[hidden] {
@@ -118,30 +117,6 @@ body {
   display: block;
   width: clamp(10px, 2cqw, 24px);
   height: clamp(10px, 2cqw, 24px);
-}
-
-.debug-controls {
-  position: absolute;
-  z-index: 3;
-  top: calc(24px + clamp(10px, 2cqw, 24px) + min(24px, 2cqw));
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 6px;
-  padding: 6px;
-  border-radius: 8px;
-  background: rgb(0 0 0 / 78%);
-  color: #fff;
-  font: 12px/1.2 system-ui, sans-serif;
-  user-select: none;
-}
-
-.debug-button {
-  padding: 6px 10px;
-  border: 1px solid rgb(255 255 255 / 35%);
-  border-radius: 6px;
-  background: rgb(255 255 255 / 12%);
-  cursor: pointer;
 }
 
 .hint-panel {
@@ -246,7 +221,6 @@ body {
 }
 
 .modal-next:hover,
-.modal-restart:hover,
-.debug-button:hover {
+.modal-restart:hover {
   background: rgb(255 255 255 / 22%);
 }

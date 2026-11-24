@@ -65,7 +65,7 @@ const lifeIcons = Array.from({ length: totalAttempts }, () => {
   return icon;
 });
 
-function showModal(title, message, label, onContinue, restartLabel) {
+function showModal(title, message, label, onContinue, { restartLabel, closeOnContinue = true } = {}) {
   return new Promise((resolve) => {
     modalTitle.textContent = title;
     modalTitle.hidden = title === "";
@@ -76,11 +76,13 @@ function showModal(title, message, label, onContinue, restartLabel) {
     const finish = (action) => {
       modalNext.removeEventListener("click", next);
       modalRestart.removeEventListener("click", restart);
-      if (action === "continue") onContinue?.();
       modalLayer.hidden = true;
       resolve(action);
     };
-    const next = () => finish("continue");
+    const next = () => {
+      onContinue?.();
+      if (closeOnContinue) finish("continue");
+    };
     const restart = () => finish("restart");
     modalNext.addEventListener("click", next);
     if (restartLabel) modalRestart.addEventListener("click", restart);
@@ -112,7 +114,6 @@ async function initializeScene() {
   const image = document.querySelector(".scene-image");
   const map = document.querySelector("#scene-map");
   const debugOverlay = document.querySelector(".debug-overlay");
-  const debugControls = document.querySelector(".debug-controls");
   const hintPanel = document.querySelector(".hint-panel");
   const progressCounter = document.querySelector(".progress-counter");
   const progressIcons = scene.objects.map(() => {
@@ -127,8 +128,6 @@ async function initializeScene() {
   image.src = scene.image.src;
 
   if (debugMode) {
-    document.querySelector(".debug-lose").addEventListener("click", () => showDebugResult("DEBUG_LOSE"));
-    document.querySelector(".debug-win").addEventListener("click", () => showDebugResult("DEBUG_WIN"));
     debugOverlay.setAttribute("viewBox", `0 0 ${scene.image.width} ${scene.image.height}`);
     for (const object of scene.objects) {
       const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
@@ -137,19 +136,9 @@ async function initializeScene() {
     }
   }
 
-  async function showDebugResult(event) {
-    if (!modalLayer.hidden) {
-      modalNext.click();
-      // Завершаем обработку подсказки или промаха перед показом финала.
-      await Promise.resolve();
-    }
-    await machine.send(event);
-  }
-
   function renderGame() {
     const textScreen = ["intro", "outro", "outro_note"].includes(gameState.status);
     modal.classList.toggle("modal-note", gameState.status === "outro_note");
-    debugControls.hidden = !debugMode || gameState.status !== "searching";
     livesCounter.hidden = textScreen;
     lifeIcons.forEach((icon, index) => {
       icon.src = index >= totalAttempts - gameState.lives ? "assets/heart.svg" : "assets/heart-outline.svg";
@@ -224,11 +213,13 @@ async function initializeScene() {
             fadeOutMusic(outroMusic, outroGain);
             if (victoryUrl) window.open(victoryUrl, "_blank", "noopener,noreferrer");
           },
-          texts.outro_note.restartButton
+          { restartLabel: texts.outro_note.restartButton, closeOnContinue: false }
         );
-        if (action === "restart") fadeOutMusic(outroMusic, outroGain);
-        await fadeScene(1, 0);
-        if (action === "restart") window.location.reload();
+        if (action === "restart") {
+          fadeOutMusic(outroMusic, outroGain);
+          await fadeScene(1, 0);
+          window.location.reload();
+        }
         break;
       }
       case "out_of_lives":

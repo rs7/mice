@@ -11,14 +11,6 @@ export function createGameMachine(gameState, objectCount, onChange) {
       MISS: () => {
         gameState.lives -= 1;
         return gameState.lives === 0 ? "out_of_lives" : "searching";
-      },
-      DEBUG_LOSE: () => {
-        gameState.lives = 0;
-        return "out_of_lives";
-      },
-      DEBUG_WIN: () => {
-        gameState.selectedObjectIndex = objectCount - 1;
-        return "all_found";
       }
     },
     item_found: {
