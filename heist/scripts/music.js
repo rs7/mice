@@ -13,7 +13,6 @@ export function startBackgroundMusic() {
   const now = musicContext.currentTime;
   musicGain.gain.cancelScheduledValues(now);
   musicGain.gain.setValueAtTime(1, now);
-  backgroundMusic.currentTime = 0;
   musicContext.resume();
   backgroundMusic.play();
 }

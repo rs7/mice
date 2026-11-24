@@ -43,7 +43,7 @@ function setLights(){for(const s of ['green','yellow','red'])$(s).classList.togg
 function switchLight(now){if(signal==='green'){signal='yellow';afterYellow='red'}else if(signal==='red'){signal='yellow';afterYellow='green'}else signal=afterYellow;nextSwitch=now+dur[signal];setLights()}
 function end(win){
  if(!playing)return;
- fadeOutBackgroundMusic(transitionDuration);
+ if(win)fadeOutBackgroundMusic(transitionDuration);
  playing=false;drag=false;
  stage.classList.add('modal-cursor');
  result.classList.toggle('win',win);
