@@ -47,14 +47,9 @@ function fadeScene(from, to) {
   }).finished;
 }
 
-// Переходы и перезапуск.
+// Переход к следующей части.
 function nextPart() {
   window.open(victoryUrl, "_blank", "noopener,noreferrer");
-}
-
-async function restart() {
-  await fadeScene(1, 0);
-  window.location.reload();
 }
 
 // Финальная записка.
@@ -126,10 +121,25 @@ async function initializeScene() {
     hintPanel.textContent = getCurrentObject().hint;
   }
 
+  async function restart() {
+    await fadeScene(1, 0);
+    if (gameState.status === "end") window.location.reload();
+    else await machine.send("RESTART");
+  }
+
   async function handleStateChange(event) {
     renderGame();
 
     switch (gameState.status) {
+      case "intro": {
+        const continued = showMessage(texts.intro);
+        if (event === "RESTART") await fadeScene(0, 1);
+        await continued;
+        startBackgroundMusic();
+        await image.decode();
+        await machine.send("CONTINUE");
+        break;
+      }
       case "welcome":
         await fadeScene(0, 1);
         await showMessage(texts.welcome);
@@ -223,11 +233,7 @@ async function initializeScene() {
 
   resizeMap();
   new ResizeObserver(resizeMap).observe(viewport);
-  renderGame();
-  await showMessage(texts.intro);
-  startBackgroundMusic();
-  await image.decode();
-  await machine.send("CONTINUE");
+  await handleStateChange("INIT");
 }
 
 initializeScene();

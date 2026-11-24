@@ -1,4 +1,12 @@
 export function createGameMachine(gameState, objectCount, onChange) {
+  const initialLives = gameState.lives;
+
+  function restart() {
+    gameState.lives = initialLives;
+    gameState.currentIndex = 0;
+    return "intro";
+  }
+
   const transitions = {
     intro: {
       CONTINUE: () => "welcome"
@@ -29,7 +37,9 @@ export function createGameMachine(gameState, objectCount, onChange) {
       CONTINUE: () => "end"
     },
     end: {},
-    out_of_lives: {}
+    out_of_lives: {
+      RESTART: restart
+    }
   };
 
   return {
