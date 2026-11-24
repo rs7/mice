@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Найди предмет</title>
+    <title>Кладовая ароматов</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link rel="stylesheet" href="./style.css">
   </head>
   <body>
@@ -28,8 +29,28 @@
       </div>
     </main>
 
+    <template id="outro-note-template">
+      <p data-message></p>
+      <p><em data-signature></em></p>
+      <hr>
+      <p data-afterword></p>
+    </template>
+
+    <template id="modal-button-template">
+      <button class="modal-button" type="button" tabindex="-1"></button>
+    </template>
+
+    <template id="life-icon-template">
+      <img class="lives-icon" src="assets/heart.svg" alt="" draggable="false">
+    </template>
+
+    <template id="progress-icon-template">
+      <img class="progress-icon" src="assets/star-outline.svg" alt="" draggable="false">
+    </template>
+
     <audio class="background-music" src="assets/background.mp3" loop preload="auto"></audio>
-    <audio class="outro-music" src="assets/outro.mp3" preload="auto"></audio>
-    <script type="module" src="./game.js"></script>
+    <audio class="outro-music" src="assets/outro.mp3" loop preload="auto"></audio>
+
+    <script type="module" src="./scripts/game.js"></script>
   </body>
 </html>

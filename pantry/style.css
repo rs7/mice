@@ -181,8 +181,13 @@ body {
   text-align: center;
 }
 
+.modal-note .modal-text {
+  white-space: normal;
+}
+
 .modal-text p {
   margin: 0;
+  white-space: pre-wrap;
 }
 
 .modal-text p + p {

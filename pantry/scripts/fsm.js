@@ -15,10 +15,10 @@ export function createGameMachine(gameState, objectCount, onChange) {
     },
     item_found: {
       CONTINUE: () => {
-        if (gameState.selectedObjectIndex === objectCount - 1) {
+        if (gameState.currentIndex === objectCount - 1) {
           return "all_found";
         }
-        gameState.selectedObjectIndex += 1;
+        gameState.currentIndex += 1;
         return "searching";
       }
     },
@@ -26,9 +26,9 @@ export function createGameMachine(gameState, objectCount, onChange) {
       CONTINUE: () => "outro"
     },
     outro: {
-      CONTINUE: () => "outro_note"
+      CONTINUE: () => "end"
     },
-    outro_note: {},
+    end: {},
     out_of_lives: {}
   };
 
