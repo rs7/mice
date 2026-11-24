@@ -1,6 +1,7 @@
 import { createGameMachine } from "./fsm.js";
 
 const debugMode = new URLSearchParams(window.location.search).has("help");
+
 const totalAttempts = 4;
 const transitionDuration = 1000;
 const victoryUrl = "../heist/";
@@ -11,27 +12,35 @@ const gameState = {
   selectedObjectIndex: 0
 };
 
+const viewport = document.querySelector(".scene-viewport");
+const stage = document.querySelector(".scene-stage");
+const image = document.querySelector(".scene-image");
+const map = document.querySelector("#scene-map");
+const debugOverlay = document.querySelector(".debug-overlay");
+const hintPanel = document.querySelector(".hint-panel");
+const livesCounter = document.querySelector(".lives-counter");
+const progressCounter = document.querySelector(".progress-counter");
 const modalLayer = document.querySelector(".modal-layer");
 const modal = document.querySelector(".modal");
 const modalTitle = document.querySelector(".modal-title");
 const modalText = document.querySelector(".modal-text");
-const modalNext = document.querySelector(".modal-next");
-const modalRestart = document.querySelector(".modal-restart");
-const livesCounter = document.querySelector(".lives-counter");
+const modalActions = document.querySelector(".modal-actions");
 const backgroundMusic = document.querySelector(".background-music");
 const outroMusic = document.querySelector(".outro-music");
+
 let musicContext;
 let musicGain;
 let outroGain;
 
 backgroundMusic.volume = 0.3;
 outroMusic.volume = 0.3;
-modalNext.addEventListener("click", () => {
+
+function startBackgroundMusic() {
   musicContext = new AudioContext();
   musicGain = createMusicGain(backgroundMusic);
   musicContext.resume();
   backgroundMusic.play();
-}, { once: true });
+}
 
 function createMusicGain(audio) {
   const gain = musicContext.createGain();
@@ -57,38 +66,46 @@ function startOutroMusic() {
   outroMusic.play();
 }
 
-const lifeIcons = Array.from({ length: totalAttempts }, () => {
-  const icon = document.createElement("img");
-  icon.classList.add("lives-icon");
-  icon.draggable = false;
-  livesCounter.append(icon);
-  return icon;
-});
-
-function showModal(title, message, label, onContinue, { restartLabel, closeOnContinue = true } = {}) {
+function showModal(title, text, createButtons) {
   return new Promise((resolve) => {
     modalTitle.textContent = title;
     modalTitle.hidden = title === "";
-    modalText.replaceChildren(message);
-    modalNext.textContent = label;
-    modalRestart.textContent = restartLabel ?? "";
-    modalRestart.hidden = !restartLabel;
-    const finish = (action) => {
-      modalNext.removeEventListener("click", next);
-      modalRestart.removeEventListener("click", restart);
+    modalText.replaceChildren(text);
+    const finish = (value) => {
       modalLayer.hidden = true;
-      resolve(action);
+      modalActions.replaceChildren();
+      resolve(value);
     };
-    const next = () => {
-      onContinue?.();
-      if (closeOnContinue) finish("continue");
-    };
-    const restart = () => finish("restart");
-    modalNext.addEventListener("click", next);
-    if (restartLabel) modalRestart.addEventListener("click", restart);
+    modalActions.replaceChildren(...createButtons(finish));
     modalLayer.hidden = false;
     modal.scrollTop = 0;
+    modalActions.firstElementChild?.focus({ preventScroll: true });
   });
+}
+
+function createButton(label, onClick) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.classList.add("modal-button");
+  button.textContent = label;
+  button.addEventListener("click", onClick);
+  return button;
+}
+
+function showMessage(title, text, label) {
+  return showModal(title, text, (finish) => [
+    createButton(label, () => finish())
+  ]);
+}
+
+function showEnd(text) {
+  return showModal(text.title, createOutroNote(text), (finish) => [
+    createButton(text.restartButton, () => finish("restart")),
+    createButton(text.button, () => {
+      fadeOutMusic(outroMusic, outroGain);
+      if (victoryUrl) window.open(victoryUrl, "_blank", "noopener,noreferrer");
+    })
+  ]);
 }
 
 function createOutroNote(text) {
@@ -108,14 +125,13 @@ function createOutroNote(text) {
 async function initializeScene() {
   const response = await fetch("objects.json");
   const scene = await response.json();
-  if (debugMode) scene.objects = scene.objects.slice(0, 2);
-  const viewport = document.querySelector(".scene-viewport");
-  const stage = document.querySelector(".scene-stage");
-  const image = document.querySelector(".scene-image");
-  const map = document.querySelector("#scene-map");
-  const debugOverlay = document.querySelector(".debug-overlay");
-  const hintPanel = document.querySelector(".hint-panel");
-  const progressCounter = document.querySelector(".progress-counter");
+  const lifeIcons = Array.from({ length: totalAttempts }, () => {
+    const icon = document.createElement("img");
+    icon.classList.add("lives-icon");
+    icon.draggable = false;
+    livesCounter.append(icon);
+    return icon;
+  });
   const progressIcons = scene.objects.map(() => {
     const icon = document.createElement("img");
     icon.classList.add("progress-icon");
@@ -173,48 +189,40 @@ async function initializeScene() {
     switch (gameState.status) {
       case "welcome":
         await fadeScene(0, 1);
-        await showModal(texts.welcome.title, texts.welcome.message, texts.welcome.button);
+        await showMessage(texts.welcome.title, texts.welcome.message, texts.welcome.button);
         await machine.send("START");
         break;
       case "searching":
         if (event === "START" || event === "CONTINUE") {
           hintPanel.hidden = true;
           const object = scene.objects[gameState.selectedObjectIndex];
-          await showModal(texts.hint.title, object.hint, texts.hint.button);
+          await showMessage(texts.hint.title, object.hint, texts.hint.button);
           hintPanel.hidden = false;
         } else if (event === "MISS") {
-          await showModal(texts.miss.title, texts.miss.message, texts.miss.button);
+          await showMessage(texts.miss.title, texts.miss.message, texts.miss.button);
         }
         break;
       case "item_found": {
         const object = scene.objects[gameState.selectedObjectIndex];
-        await showModal(object.name, object.foundText, object.foundButton);
+        await showMessage(object.name, object.foundText, object.foundButton);
         await machine.send("CONTINUE");
         break;
       }
       case "all_found":
-        await showModal(texts.all_found.title, texts.all_found.message, texts.all_found.button, startOutroMusic);
+        await showMessage(texts.all_found.title, texts.all_found.message, texts.all_found.button);
+        startOutroMusic();
         await fadeScene(1, 0);
         await machine.send("CONTINUE");
         break;
       case "outro": {
-        const continued = showModal(texts.outro.title, texts.outro.message, texts.outro.button);
+        const continued = showMessage(texts.outro.title, texts.outro.message, texts.outro.button);
         await fadeScene(0, 1);
         await continued;
         await machine.send("CONTINUE");
         break;
       }
       case "outro_note": {
-        const action = await showModal(
-          texts.outro_note.title,
-          createOutroNote(texts.outro_note),
-          texts.outro_note.button,
-          () => {
-            fadeOutMusic(outroMusic, outroGain);
-            if (victoryUrl) window.open(victoryUrl, "_blank", "noopener,noreferrer");
-          },
-          { restartLabel: texts.outro_note.restartButton, closeOnContinue: false }
-        );
+        const action = await showEnd(texts.outro_note);
         if (action === "restart") {
           fadeOutMusic(outroMusic, outroGain);
           await fadeScene(1, 0);
@@ -223,7 +231,7 @@ async function initializeScene() {
         break;
       }
       case "out_of_lives":
-        await showModal(texts.out_of_lives.title, texts.out_of_lives.message, texts.out_of_lives.button);
+        await showMessage(texts.out_of_lives.title, texts.out_of_lives.message, texts.out_of_lives.button);
         await fadeScene(1, 0);
         window.location.reload();
         break;
@@ -234,14 +242,12 @@ async function initializeScene() {
     const area = document.createElement("area");
     area.shape = "poly";
     area.addEventListener("click", () => {
-      if (index < gameState.selectedObjectIndex) return;
       machine.send(index === gameState.selectedObjectIndex ? "HIT" : "MISS");
     });
     map.append(area);
     return { area, polygon: object.polygon };
   });
 
-  // Клики по area обрабатываются отдельно и не всплывают в соседний img.
   image.addEventListener("click", () => machine.send("MISS"));
 
   function resizeMap() {
@@ -253,8 +259,6 @@ async function initializeScene() {
     stage.style.width = `${scene.image.width * scale}px`;
     stage.style.height = `${scene.image.height * scale}px`;
 
-    // polygon: [x, y] в пикселях исходной картинки.
-    // Начало — левый верхний угол; x растёт вправо, y — вниз.
     for (const { area, polygon } of areas) {
       area.coords = polygon
         .flatMap(([x, y]) => [Math.round(x * scale), Math.round(y * scale)])
@@ -265,7 +269,8 @@ async function initializeScene() {
   resizeMap();
   new ResizeObserver(resizeMap).observe(viewport);
   renderGame();
-  await showModal(texts.intro.title, texts.intro.message, texts.intro.button);
+  await showMessage(texts.intro.title, texts.intro.message, texts.intro.button);
+  startBackgroundMusic();
   await image.decode();
   await machine.send("CONTINUE");
 }
