@@ -263,9 +263,8 @@
   }
 
 
-  function onExactTarget(){
-    const f = parseFloat(tuner.value);
-    return powered && Math.abs(f - TARGET) < 0.001;
+  function isStationLocked(){
+    return powered && Math.abs(parseFloat(tuner.value) - TARGET) <= RANGE_LOCK;
   }
 
   function hideInvestigation(){
@@ -296,7 +295,7 @@
   }
 
   function scheduleInvestigation(){
-    if(!onExactTarget()){
+    if(!isStationLocked()){
       hideInvestigation();
       return;
     }
@@ -306,7 +305,7 @@
     investigationTimer = setTimeout(() => {
       investigationTimer = null;
 
-      if(!onExactTarget()) return;
+      if(!isStationLocked()) return;
 
       investigationShown = true;
       investigationWrap.classList.remove('evaporate');
@@ -338,7 +337,7 @@
       s = 0.55 * Math.pow(closeness, 1.5);
     }
 
-    if(d <= RANGE_LOCK){
+    if(isStationLocked()){
       station.textContent = 'СЮЖЕТ';
       station.classList.add('on');
       n = 0.018;
